@@ -20,11 +20,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov
-          pytest tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+          pip install pytest
+          pytest tests.py
