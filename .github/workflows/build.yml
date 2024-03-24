@@ -16,6 +16,10 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
