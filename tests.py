@@ -6,7 +6,7 @@ import python_aes.aes as python_aes
 c_aes = ctypes.CDLL('./rijndael.so')
 p_aes = python_aes.AES(b'\x00' * 16)
 
-def _random_key():
+def _random_block():
     return bytes([random.randint(0, 255) for _ in range(16)])
 
 def _random_byte():
@@ -53,7 +53,7 @@ def test_xor_words():
 
 def test_expand_key():
     # 16 byte block
-    key = _random_key()
+    key = _random_block()
     print('random key:', key)
 
     c_key = ctypes.create_string_buffer(key)
@@ -67,21 +67,22 @@ def test_expand_key():
     print (c_keys)
 
     assert len(c_keys) == 176
-    assert c_keys == keys2bytes(p_keys)
+    assert c_keys == _keys2bytes(p_keys)
 
-@pytest.mark.skip(reason="we'll come to it")
-def test_fact():
+def test_sub_bytes():
     # 16 byte block
-    buffer = b'\x00\x01\x02\x03\x04\x05\x06\x07'
-    buffer += b'\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
+    buffer = _random_block()
+    print('random block:', buffer)
     block = ctypes.create_string_buffer(buffer)
 
     c_aes.sub_bytes(block)
+    c_result = ctypes.string_at(block, 16)
 
-    addresses = [[4, 5, 2, 1], [6, 7, 12, 0], [8, 9, 4, 4], [10, 11, 1, 2]]
-    python_aes.sub_bytes(addresses)
+    matrix = python_aes.bytes2matrix(buffer)
+    python_aes.sub_bytes(matrix)
+    p_result = python_aes.matrix2bytes(matrix)
 
-    assert block.value == addresses
+    assert c_result == p_result
 
 # todo: test entire encryption and decryption process three times
     # generate 3 random plaintexts and keys, encrypt them with both
@@ -99,7 +100,7 @@ def test_fact():
 #     yield rijndael
 
 
-def keys2bytes(keys: list[list[list]]):
+def _keys2bytes(keys: list[list[list]]):
     """ Converts a 3D list into a byte array. """
     # Flatten the list
     flat_list = [item for sublist1 in keys for sublist2 in sublist1 for item in sublist2]

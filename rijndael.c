@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 // TODO: Any other files you need to include should go here
-#include <string.h> // memcpy
+#include <string.h>  // memcpy
 
 #include "rijndael.h"
 
@@ -82,7 +82,9 @@ void xor_words(unsigned char *a, unsigned char *b) {
  * Operations used when encrypting a block
  */
 void sub_bytes(unsigned char *block) {
-  // TODO: Implement me!
+  for (int i = 0; i < BLOCK_SIZE; i++) {
+    sub_byte(&block[i]);
+  }
 }
 
 void shift_rows(unsigned char *block) {
@@ -121,11 +123,11 @@ void add_round_key(unsigned char *block, unsigned char *round_key) {
  * vector, containing the 11 round keys one after the other
  */
 unsigned char *expand_key(unsigned char *cipher_key) {
-  unsigned char *output = (unsigned char *)malloc(sizeof(unsigned char) *
-                                                  BLOCK_SIZE * (ROUNDS + 1));
+  unsigned char *output =
+      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE * (ROUNDS + 1)));
 
   // the first round key is the original key
-  memcpy(output, cipher_key, sizeof(unsigned char) * BLOCK_SIZE);
+  memcpy(output, cipher_key, NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
 
   // iterate over the expanded key by round key, starting with the second
   for (int round = 1; round < ROUNDS + 1; round++) {
@@ -153,7 +155,8 @@ unsigned char *expand_key(unsigned char *cipher_key) {
     for (int j = 1; j < 4; j++) {
       int word_offset = j * 4;
       // copy the previous word
-      memcpy(&new_key[word_offset], &new_key[word_offset - WORD_SIZE], WORD_SIZE);
+      memcpy(&new_key[word_offset], &new_key[word_offset - WORD_SIZE],
+             WORD_SIZE);
 
       // xor with word at the same position in the last key (== postion - 4)
       xor_words(&new_key[word_offset], &last_key[word_offset]);
@@ -187,7 +190,9 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
 
   // encrypt the block
   unsigned char *output =
-      (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
+
+  memcpy(output, plaintext, NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
 
   // round 1: add round key
   add_round_key(output, &roundkeys[0]);
@@ -197,7 +202,7 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
     sub_bytes(output);
     shift_rows(output);
     mix_columns(output);
-    add_round_key(output, &roundkeys[i]);
+    add_round_key(output, &roundkeys[i * BLOCK_SIZE]);
   }
 
   // round 10: sub bytes, shift rows, add round key
@@ -213,6 +218,6 @@ unsigned char *aes_decrypt_block(unsigned char *ciphertext,
                                  unsigned char *key) {
   // TODO: Implement me!
   unsigned char *output =
-      (unsigned char *)malloc(sizeof(unsigned char) * BLOCK_SIZE);
+      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
   return output;
 }

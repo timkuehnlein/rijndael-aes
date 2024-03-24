@@ -7,6 +7,7 @@
 #define RIJNDAEL_H
 
 #define BLOCK_ACCESS(block, row, col) (block[(row * 4) + col])
+#define NUMBER_BYTES_TO_BITS(number) (number * sizeof(unsigned char))
 #define BLOCK_SIZE 16
 #define WORD_SIZE 4
 #define ROUNDS 10
