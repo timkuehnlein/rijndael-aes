@@ -15,7 +15,7 @@ jobs:
           make
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}
+          ls ${{ github.workspace }}/python_aes
       - name: Test with pytest
         run: |
           pip install pytest
