@@ -129,7 +129,33 @@ void invert_sub_bytes(unsigned char *block) {
 }
 
 void invert_shift_rows(unsigned char *block) {
-  // TODO: Implement me!
+  unsigned char(*m)[4][4] = MATRIX(block);
+
+  // row 1
+  unsigned char temp = (*m)[3][1];
+  // equivalent to: 
+  // unsigned char temp = BLOCK_ACCESS(block, 0, 3);
+  (*m)[3][1] = (*m)[2][1];
+  (*m)[2][1] = (*m)[1][1];
+  (*m)[1][1] = (*m)[0][1];
+  (*m)[0][1] = temp;
+
+  // row 2
+  temp = (*m)[3][2];
+  unsigned char temp2 = (*m)[2][2];
+  (*m)[3][2] = (*m)[1][2];
+  (*m)[2][2] = (*m)[0][2];
+  (*m)[1][2] = temp;
+  (*m)[0][2] = temp2;
+
+  // row 3
+  temp = (*m)[3][3];
+  temp2 = (*m)[2][3];
+  unsigned char temp3 = (*m)[1][3];
+  (*m)[3][3] = (*m)[0][3];
+  (*m)[2][3] = temp;
+  (*m)[1][3] = temp2;
+  (*m)[0][3] = temp3;
 }
 
 void invert_mix_columns(unsigned char *block) {

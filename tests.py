@@ -105,6 +105,22 @@ def test_shift_rows():
 
     assert c_result == p_result
 
+def test_invert_shift_rows():
+    # 16 byte block
+    buffer = _random_block()
+    print('random block:', buffer)
+    block = ctypes.create_string_buffer(buffer)
+
+    c_aes.invert_shift_rows.restype = ctypes.POINTER(ctypes.c_char * 16)
+    c_aes.invert_shift_rows(block)
+    c_result = ctypes.string_at(block, 16)
+
+    matrix = python_aes.bytes2matrix(buffer)
+    python_aes.inv_shift_rows(matrix)
+    p_result = python_aes.matrix2bytes(matrix)
+
+    assert c_result == p_result
+
 # todo: test entire encryption and decryption process three times
     # generate 3 random plaintexts and keys, encrypt them with both
     # your code and the Python implementation, and ensure that the resulting ciphertexts match.
