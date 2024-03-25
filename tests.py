@@ -58,6 +58,7 @@ def test_expand_key():
 
     c_key = ctypes.create_string_buffer(key)
 
+    c_aes.expand_key.restype = ctypes.POINTER(ctypes.c_char * 176)
     c_keys = ctypes.string_at(
         c_aes.expand_key(c_key),
         176
