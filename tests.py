@@ -39,6 +39,26 @@ def test_sub_word():
     p_result = [python_aes.s_box[b] for b in word]
     assert c_result == bytes(p_result)
 
+def test_invert_sub_byte():
+    byte = _random_byte()
+    print('random byte:', byte)
+    c_byte = ctypes.create_string_buffer(byte)
+    c_aes.invert_sub_byte(c_byte)
+    c_result = ctypes.string_at(c_byte, 1)
+
+    p_result = python_aes.inv_s_box[byte[0]]
+
+    assert c_result == bytes([p_result])
+
+def test_invert_sub_word():
+    word = b'\x00\x01\x02\x03'
+    c_word = ctypes.create_string_buffer(word)
+    c_aes.invert_sub_word(c_word)
+    c_result = ctypes.string_at(c_word, 4)
+
+    p_result = [python_aes.inv_s_box[b] for b in word]
+    assert c_result == bytes(p_result)
+
 def test_xor_words():
     word1 = b'\x00\x01\x02\x03'
     word2 = b'\x04\x05\x06\x07'
@@ -85,6 +105,21 @@ def test_sub_bytes():
 
     matrix = python_aes.bytes2matrix(buffer)
     python_aes.sub_bytes(matrix)
+    p_result = python_aes.matrix2bytes(matrix)
+
+    assert c_result == p_result
+
+def test_invert_sub_bytes():
+    # 16 byte block
+    buffer = _random_block()
+    print('random block:', buffer)
+    block = ctypes.create_string_buffer(buffer)
+
+    c_aes.invert_sub_bytes(block)
+    c_result = ctypes.string_at(block, 16)
+
+    matrix = python_aes.bytes2matrix(buffer)
+    python_aes.inv_sub_bytes(matrix)
     p_result = python_aes.matrix2bytes(matrix)
 
     assert c_result == p_result
