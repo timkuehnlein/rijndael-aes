@@ -1,6 +1,5 @@
 import ctypes
 import random
-import pytest
 import python_aes.aes as python_aes
 
 c_aes = ctypes.CDLL('./rijndael.so')
@@ -86,6 +85,22 @@ def test_sub_bytes():
 
     matrix = python_aes.bytes2matrix(buffer)
     python_aes.sub_bytes(matrix)
+    p_result = python_aes.matrix2bytes(matrix)
+
+    assert c_result == p_result
+
+def test_shift_rows():
+    # 16 byte block
+    buffer = _random_block()
+    print('random block:', buffer)
+    block = ctypes.create_string_buffer(buffer)
+
+    c_aes.shift_rows.restype = ctypes.POINTER(ctypes.c_char * 16)
+    c_aes.shift_rows(block)
+    c_result = ctypes.string_at(block, 16)
+
+    matrix = python_aes.bytes2matrix(buffer)
+    python_aes.shift_rows(matrix)
     p_result = python_aes.matrix2bytes(matrix)
 
     assert c_result == p_result

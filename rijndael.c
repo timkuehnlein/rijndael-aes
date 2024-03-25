@@ -88,7 +88,33 @@ void sub_bytes(unsigned char *block) {
 }
 
 void shift_rows(unsigned char *block) {
-  // TODO: Implement me!
+  unsigned char(*matrix)[4][4] = MATRIX(block);
+
+  // row 1
+  unsigned char temp = (*matrix)[0][1];
+  // equivalent to: 
+  // unsigned char temp = BLOCK_ACCESS(block, 0, 1);
+  (*matrix)[0][1] = (*matrix)[1][1];
+  (*matrix)[1][1] = (*matrix)[2][1];
+  (*matrix)[2][1] = (*matrix)[3][1];
+  (*matrix)[3][1] = temp;
+
+  // row 2
+  temp = (*matrix)[0][2];
+  unsigned char temp2 = (*matrix)[1][2];
+  (*matrix)[0][2] = (*matrix)[2][2];
+  (*matrix)[1][2] = (*matrix)[3][2];
+  (*matrix)[2][2] = temp;
+  (*matrix)[3][2] = temp2;
+
+  // row 3
+  temp = (*matrix)[0][3];
+  temp2 = (*matrix)[1][3];
+  unsigned char temp3 = (*matrix)[2][3];
+  (*matrix)[0][3] = (*matrix)[3][3];
+  (*matrix)[1][3] = temp;
+  (*matrix)[2][3] = temp2;
+  (*matrix)[3][3] = temp3;
 }
 
 void mix_columns(unsigned char *block) {
