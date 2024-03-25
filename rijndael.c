@@ -123,11 +123,10 @@ void add_round_key(unsigned char *block, unsigned char *round_key) {
  * vector, containing the 11 round keys one after the other
  */
 unsigned char *expand_key(unsigned char *cipher_key) {
-  unsigned char *output =
-      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE * (ROUNDS + 1)));
+  unsigned char *output = (unsigned char *)malloc(BLOCK_SIZE * (ROUNDS + 1));
 
   // the first round key is the original key
-  memcpy(output, cipher_key, NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
+  memcpy(output, cipher_key, BLOCK_SIZE);
 
   // iterate over the expanded key by round key, starting with the second
   for (int round = 1; round < ROUNDS + 1; round++) {
@@ -189,10 +188,9 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   unsigned char *roundkeys = expand_key(key);
 
   // encrypt the block
-  unsigned char *output =
-      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
+  unsigned char *output = (unsigned char *)malloc(BLOCK_SIZE);
 
-  memcpy(output, plaintext, NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
+  memcpy(output, plaintext, BLOCK_SIZE);
 
   // round 1: add round key
   add_round_key(output, &roundkeys[0]);
@@ -217,7 +215,6 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
 unsigned char *aes_decrypt_block(unsigned char *ciphertext,
                                  unsigned char *key) {
   // TODO: Implement me!
-  unsigned char *output =
-      (unsigned char *)malloc(NUMBER_BYTES_TO_BITS(BLOCK_SIZE));
+  unsigned char *output = (unsigned char *)malloc(BLOCK_SIZE);
   return output;
 }
