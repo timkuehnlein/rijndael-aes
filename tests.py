@@ -58,6 +58,11 @@ def test_expand_key():
 
     c_key = ctypes.create_string_buffer(key)
 
+    # https://docs.python.org/3/library/ctypes.html#return-types
+    # "By default functions are assumed to return the C int type.
+    # Other return types can be specified by setting the restype
+    # attribute of the function object."
+    # hint from https://stackoverflow.com/questions/55999102/segfault-when-accessing-large-memory-buffer-from-ctypes
     c_aes.expand_key.restype = ctypes.POINTER(ctypes.c_char * 176)
     c_keys = ctypes.string_at(
         c_aes.expand_key(c_key),
