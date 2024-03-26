@@ -162,6 +162,20 @@ def test_invert_shift_rows():
 
     assert c_result == p_result
 
+def test_mix_single_column():
+    word = b'\x45\x01\x02\x03'
+    c_word = ctypes.create_string_buffer(word)
+    p_word = list(word)
+
+    c_aes.mix_single_column(c_word)
+    c_result = ctypes.string_at(c_word, 4)
+
+    print (p_word)
+    python_aes.mix_single_column(p_word)
+    p_result = bytes(p_word)
+
+    assert c_result == p_result
+
 def test_add_round_key():
     block_buffer = _random_block()
     key_buffer = _random_block()

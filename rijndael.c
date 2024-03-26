@@ -161,8 +161,36 @@ void shift_rows(unsigned char *block) {
   (*matrix)[3][3] = temp3;
 }
 
+unsigned char xtime(unsigned char x) {
+  return (x & 0x80) ? ((x << 1) ^ 0x1B) : (unsigned char)(x << 1);
+}
+
+void mix_single_column(unsigned char *word) {
+  unsigned char t = word[0] ^ word[1] ^ word[2] ^ word[3];
+  unsigned char u = word[0];
+
+  word[0] = word[0] ^ t ^ xtime(word[0] ^ word[1]);
+  word[1] = word[1] ^ t ^ xtime(word[1] ^ word[2]);
+  word[2] = word[2] ^ t ^ xtime(word[2] ^ word[3]);
+  word[3] = word[3] ^ t ^ xtime(word[3] ^ u);
+  
+  // unsigned char b0 = word[0];
+  // unsigned char b1 = word[1];
+  // unsigned char b2 = word[2];
+  // unsigned char b3 = word[3];
+
+  // word[0] = (b0 * 2 % 16) ^ (b1 * 3 % 16) ^ (b2 * 1 % 16) ^ (b3 * 1 % 16);
+  // word[1] = (b0 * 1 % 16) ^ (b1 * 2 % 16) ^ (b2 * 3 % 16) ^ (b3 * 1 % 16);
+  // word[2] = (b0 * 1 % 16) ^ (b1 * 1 % 16) ^ (b2 * 2 % 16) ^ (b3 * 3 % 16);
+  // word[3] = (b0 * 3 % 16) ^ (b1 * 1 % 16) ^ (b2 * 1 % 16) ^ (b3 * 2 % 16);
+}
+
 void mix_columns(unsigned char *block) {
-  // TODO: Implement me!
+  unsigned char(*m)[4][4] = MATRIX(block);
+
+  for (int i = 0; i < 4; i++) {
+    mix_single_column((unsigned char *)m[i]);
+  }
 }
 
 /*
