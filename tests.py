@@ -98,7 +98,7 @@ def test_expand_key():
     assert len(c_keys) == 176
     assert c_keys == _keys2bytes(p_keys)
 
-    c_aes.free(address)
+    c_aes.my_free(address)
 
 def test_sub_bytes():
     # 16 byte block

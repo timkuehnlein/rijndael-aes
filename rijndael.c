@@ -68,9 +68,7 @@ const unsigned char r_con[32] = {
     0x35, 0x6A, 0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
 };
 
-void free(unsigned char *pointer) {
-  free(pointer);
-}
+void my_free(unsigned char *pointer) { free(pointer); }
 
 /*
  * Rotates a word of n bytes
