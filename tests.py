@@ -11,6 +11,9 @@ def _random_block():
 def _random_byte():
     return bytes([random.randint(0, 255)])
 
+#todo are all mallocs deallocated?
+
+# todo is this in python?
 def test_rotate_left():
     word = b'\x00\x01\x02\x03'
     c_word = ctypes.create_string_buffer(word)
@@ -83,8 +86,9 @@ def test_expand_key():
     # attribute of the function object."
     # hint from https://stackoverflow.com/questions/55999102/segfault-when-accessing-large-memory-buffer-from-ctypes
     c_aes.expand_key.restype = ctypes.POINTER(ctypes.c_char * 176)
+    address = c_aes.expand_key(c_key)
     c_keys = ctypes.string_at(
-        c_aes.expand_key(c_key),
+        address,
         176
     )
     p_keys = p_aes._expand_key(key)
@@ -93,6 +97,8 @@ def test_expand_key():
 
     assert len(c_keys) == 176
     assert c_keys == _keys2bytes(p_keys)
+
+    c_aes.free(address)
 
 def test_sub_bytes():
     # 16 byte block
