@@ -212,7 +212,13 @@ void invert_mix_columns(unsigned char *block) {
  * This operation is shared between encryption and decryption
  */
 void add_round_key(unsigned char *block, unsigned char *round_key) {
-  // TODO: Implement me!
+  unsigned char(*b)[4][4] = MATRIX(block);
+  unsigned char(*k)[4][4] = MATRIX(round_key);
+  for (int i = 0; i < WORD_SIZE; i++) {
+    for (int j = 0; j < WORD_SIZE; j++) {
+      (*b)[i][j] = (*b)[i][j] ^ (*k)[i][j];
+    }
+  }
 }
 
 /*

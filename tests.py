@@ -162,6 +162,25 @@ def test_invert_shift_rows():
 
     assert c_result == p_result
 
+def test_add_round_key():
+    block_buffer = _random_block()
+    key_buffer = _random_block()
+    print('random block:', block_buffer, 'random key:', key_buffer)
+    c_block = ctypes.create_string_buffer(block_buffer)
+    c_key = ctypes.create_string_buffer(key_buffer)
+
+    # c_aes.add_round_key.restype = ctypes.POINTER(ctypes.c_char * 16)
+    c_aes.add_round_key(c_block, c_key)
+    c_result = ctypes.string_at(c_block, 16)
+
+    block_matrix = python_aes.bytes2matrix(block_buffer)
+    key_matrix = python_aes.bytes2matrix(key_buffer)
+    python_aes.add_round_key(block_matrix, key_matrix)
+    p_result = python_aes.matrix2bytes(block_matrix)
+
+    assert c_result == p_result
+
+
 # todo: test entire encryption and decryption process three times
     # generate 3 random plaintexts and keys, encrypt them with both
     # your code and the Python implementation, and ensure that the resulting ciphertexts match.

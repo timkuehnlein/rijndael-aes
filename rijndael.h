@@ -10,7 +10,7 @@
 // alternatively, we can use the following macro to cast the block to a 4x4 matrix
 // *matrix[col][row]
 // in the python implementation, it is the other way around
-#define MATRIX(pointer) ((unsigned char (*)[4][4])block)
+#define MATRIX(pointer) ((unsigned char (*)[4][4])pointer)
 #define BLOCK_SIZE 16
 #define WORD_SIZE 4
 #define ROUNDS 10
