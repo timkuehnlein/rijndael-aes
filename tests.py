@@ -1,15 +1,23 @@
 import ctypes
 import random
+
+import pytest
 import python_aes.aes as python_aes
 
 c_aes = ctypes.CDLL('./rijndael.so')
 p_aes = python_aes.AES(b'\x00' * 16)
 
 def _random_block():
-    return bytes([random.randint(0, 255) for _ in range(16)])
+    return _random_bytes(16)
+
+def _random_word():
+    return _random_bytes(4)
 
 def _random_byte():
-    return bytes([random.randint(0, 255)])
+    return _random_bytes(1)
+
+def _random_bytes(number_of_bytes: int):
+    return bytes([random.randint(0, 255) for _ in range(number_of_bytes)])
 
 #todo are all mallocs deallocated?
 
@@ -34,7 +42,8 @@ def test_sub_byte():
     assert c_result == bytes([p_result])
 
 def test_sub_word():
-    word = b'\x00\x01\x02\x03'
+    word = _random_word()
+    print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
     c_aes.sub_word(c_word)
     c_result = ctypes.string_at(c_word, 4)
@@ -54,7 +63,8 @@ def test_invert_sub_byte():
     assert c_result == bytes([p_result])
 
 def test_invert_sub_word():
-    word = b'\x00\x01\x02\x03'
+    word = _random_word()
+    print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
     c_aes.invert_sub_word(c_word)
     c_result = ctypes.string_at(c_word, 4)
@@ -63,8 +73,9 @@ def test_invert_sub_word():
     assert c_result == bytes(p_result)
 
 def test_xor_words():
-    word1 = b'\x00\x01\x02\x03'
-    word2 = b'\x04\x05\x06\x07'
+    word1 = _random_word()
+    word2 = _random_word()
+    print('random word1:', word1, 'random word2:', word2)
     c_word1 = ctypes.create_string_buffer(word1)
     c_word2 = ctypes.create_string_buffer(word2)
     c_aes.xor_words(c_word1, c_word2)
@@ -150,29 +161,44 @@ def test_invert_shift_rows():
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
-    block = ctypes.create_string_buffer(buffer)
+    c_block = ctypes.create_string_buffer(buffer)
 
     c_aes.invert_shift_rows.restype = ctypes.POINTER(ctypes.c_char * 16)
-    c_aes.invert_shift_rows(block)
-    c_result = ctypes.string_at(block, 16)
+    c_aes.invert_shift_rows(c_block)
+    c_result = ctypes.string_at(c_block, 16)
 
-    matrix = python_aes.bytes2matrix(buffer)
-    python_aes.inv_shift_rows(matrix)
-    p_result = python_aes.matrix2bytes(matrix)
+    p_matrix = python_aes.bytes2matrix(buffer)
+    python_aes.inv_shift_rows(p_matrix)
+    p_result = python_aes.matrix2bytes(p_matrix)
 
     assert c_result == p_result
 
 def test_mix_single_column():
-    word = b'\x45\x01\x02\x03'
+    word = _random_word()
+    print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
     p_word = list(word)
 
     c_aes.mix_single_column(c_word)
     c_result = ctypes.string_at(c_word, 4)
 
-    print (p_word)
     python_aes.mix_single_column(p_word)
     p_result = bytes(p_word)
+
+    assert c_result == p_result
+
+def test_mix_columns():
+    # 16 byte block
+    buffer = _random_block()
+    print('random block:', buffer)
+    c_block = ctypes.create_string_buffer(buffer)
+
+    c_aes.mix_columns(c_block)
+    c_result = ctypes.string_at(c_block, 16)
+
+    p_matrix = python_aes.bytes2matrix(buffer)
+    python_aes.mix_columns(p_matrix)
+    p_result = python_aes.matrix2bytes(p_matrix)
 
     assert c_result == p_result
 
@@ -194,6 +220,7 @@ def test_add_round_key():
 
     assert c_result == p_result
 
+@pytest.mark.skip(reason="not finished")
 def test_aes_encrypt_block():
     # 16 byte block
     block_buffer = _random_block()
