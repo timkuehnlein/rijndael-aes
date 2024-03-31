@@ -220,7 +220,6 @@ def test_add_round_key():
 
     assert c_result == p_result
 
-@pytest.mark.skip(reason="not finished")
 def test_aes_encrypt_block():
     # 16 byte block
     block_buffer = _random_block()
@@ -233,14 +232,12 @@ def test_aes_encrypt_block():
     address = c_aes.aes_encrypt_block(block, key)
     c_result = ctypes.string_at(address, 16)
 
-    block_matrix = python_aes.bytes2matrix(block_buffer)
-    key_matrix = python_aes.bytes2matrix(key_buffer)
-    # p_aes = python_aes.AES(key_matrix)
-    p_result = p_aes.encrypt_block(block_matrix)
+    _p_aes = python_aes.AES(key_buffer)
+    p_result = _p_aes.encrypt_block(block_buffer)
 
     assert c_result == bytes(p_result)
 
-    # c_aes.my_free(address)
+    c_aes.my_free(address)
 
 # todo: test entire encryption and decryption process three times
     # generate 3 random plaintexts and keys, encrypt them with both

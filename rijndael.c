@@ -330,7 +330,7 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   // round 10: sub bytes, shift rows, add round key
   sub_bytes(output);
   shift_rows(output);
-  add_round_key(output, &roundkeys[ROUNDS]);
+  add_round_key(output, &roundkeys[ROUNDS * BLOCK_SIZE]);
 
   // return the encrypted block
   return output;
