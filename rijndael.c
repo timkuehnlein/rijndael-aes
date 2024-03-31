@@ -1,6 +1,14 @@
 /*
- * TODO: Add your name and student number here, along with
- *       a brief description of this code.
+ * D23124833 / Tim Kühnlein
+ * 
+ * This file contains the implementation of the functions declared in the
+ * header file. The functions are used to encrypt and decrypt a single block
+ * of data using the AES algorithm. The block size is 128 bits and the key
+ * size is 128 bits. The implementation draws inspiration from the Python
+ * implementation of the AES algorithm, which can be found here:
+ * https://github.com/boppreh/aes.git
+ * 
+ * 
  */
 
 #include <stdlib.h>
@@ -124,19 +132,28 @@ void xor_words(unsigned char *a, unsigned char *b) {
 /*
  * Operations used when encrypting a block
  */
+
+/*
+* Substitutes each byte in a block using the s-box
+*/
 void sub_bytes(unsigned char *block) {
   for (int i = 0; i < BLOCK_SIZE; i++) {
     sub_byte(&block[i]);
   }
 }
 
+/*
+ * Shifts the rows of a block
+ * row 0: no shift
+ * row 1: shift left by 1
+ * row 2: shift left by 2
+ * row 3: shift left by 3
+ */
 void shift_rows(unsigned char *block) {
   unsigned char(*matrix)[4][4] = MATRIX(block);
 
   // row 1
   unsigned char temp = (*matrix)[0][1];
-  // equivalent to:
-  // unsigned char temp = BLOCK_ACCESS(block, 0, 1);
   (*matrix)[0][1] = (*matrix)[1][1];
   (*matrix)[1][1] = (*matrix)[2][1];
   (*matrix)[2][1] = (*matrix)[3][1];
@@ -160,10 +177,21 @@ void shift_rows(unsigned char *block) {
   (*matrix)[3][3] = temp3;
 }
 
+/*
+ * Multiplies a byte by 2 in the Galois field
+ * optimised version from
+ * https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+ * (the same as in the python implementation)
+ */
 unsigned char xtime(unsigned char x) {
   return (x & 0x80) ? ((x << 1) ^ 0x1b) : (unsigned char)(x << 1);
 }
 
+/*
+ * Mixes a single column of a block in an optimised way from
+ * https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+ * (the same as in the python implementation)
+ */
 void mix_single_column(unsigned char *word) {
   unsigned char t = word[0] ^ word[1] ^ word[2] ^ word[3];
   unsigned char temp = word[0];
@@ -174,6 +202,9 @@ void mix_single_column(unsigned char *word) {
   word[3] = word[3] ^ t ^ xtime(word[3] ^ temp);
 }
 
+/*
+ * Mixes the columns of a block
+ */
 void mix_columns(unsigned char *block) {
   unsigned char(*m)[4][4] = MATRIX(block);
 
@@ -187,12 +218,19 @@ void mix_columns(unsigned char *block) {
 /*
  * Operations used when decrypting a block
  */
+
+/*
+ * Inverts the sub bytes operation
+ */
 void invert_sub_bytes(unsigned char *block) {
   for (int i = 0; i < BLOCK_SIZE; i++) {
     invert_sub_byte(&block[i]);
   }
 }
 
+/*
+ * Inverts the shift rows operation
+ */
 void invert_shift_rows(unsigned char *block) {
   unsigned char(*m)[4][4] = MATRIX(block);
 
@@ -223,6 +261,10 @@ void invert_shift_rows(unsigned char *block) {
   (*m)[0][3] = temp3;
 }
 
+/*
+ * Inverts the mix columns operation
+ * adapted from the python implementation
+ */
 void invert_mix_columns(unsigned char *block) {
   unsigned char(*m)[4][4] = MATRIX(block);
 
@@ -240,6 +282,7 @@ void invert_mix_columns(unsigned char *block) {
 }
 
 /*
+ * Adds the round key to the block, by xoring each corresponding byte
  * This operation is shared between encryption and decryption
  */
 void add_round_key(unsigned char *block, unsigned char *round_key) {

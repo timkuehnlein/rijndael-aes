@@ -1,3 +1,10 @@
+# This file contains the tests for the AES implementation in C.
+#
+# The tests are written in Python and use the ctypes library to call the
+# C functions. Each test compares the output of the C function with the
+# output of the corresponding Python function from
+# https://github.com/boppreh/aes.git
+
 import ctypes
 import random
 
