@@ -4,7 +4,6 @@
  */
 
 #include <stdlib.h>
-// TODO: Any other files you need to include should go here
 #include <string.h>  // memcpy
 
 #include "rijndael.h"
@@ -225,7 +224,19 @@ void invert_shift_rows(unsigned char *block) {
 }
 
 void invert_mix_columns(unsigned char *block) {
-  // TODO: Implement me!
+  unsigned char(*m)[4][4] = MATRIX(block);
+
+  for (int i = 0; i < 4; i++) {
+    unsigned char u = xtime(xtime((*m)[i][0] ^ (*m)[i][2]));
+    unsigned char v = xtime(xtime((*m)[i][1] ^ (*m)[i][3]));
+      
+      (*m)[i][0] ^= u;
+      (*m)[i][1] ^= v;
+      (*m)[i][2] ^= u;
+      (*m)[i][3] ^= v;
+  }
+
+  mix_columns(block);
 }
 
 /*
@@ -298,20 +309,17 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   // key: 128 bits / 16 bytes as hex
   // block: 128 bits / 16 bytes as hex
 
-  // check if the key is 128 bits
-  // check if the block is 128 bits
   // check if the block size is 128 bits
   if (BLOCK_SIZE != 16 || ROUNDS != 10) {
     return NULL;
   }
-
-  // todo: if multiple blocks, only once expand the key, but encrypt each block
 
   // expand the key
   // 11 round keys, 16 bytes each, the first is the original key
   unsigned char *roundkeys = expand_key(key);
 
   // encrypt the block
+  // allocate one block for the output
   unsigned char *output = (unsigned char *)malloc(BLOCK_SIZE);
 
   memcpy(output, plaintext, BLOCK_SIZE);
@@ -332,13 +340,46 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   shift_rows(output);
   add_round_key(output, &roundkeys[ROUNDS * BLOCK_SIZE]);
 
+  free(roundkeys);
+
   // return the encrypted block
   return output;
 }
 
 unsigned char *aes_decrypt_block(unsigned char *ciphertext,
                                  unsigned char *key) {
-  // TODO: Implement me!
+  // check if the block size is 128 bits
+  if (BLOCK_SIZE != 16 || ROUNDS != 10) {
+    return NULL;
+  }
+
+  // expand the key
+  // 11 round keys, 16 bytes each, the first is the original key
+  unsigned char *roundkeys = expand_key(key);
+
+  // encrypt the block
+  // allocate one block for the output
   unsigned char *output = (unsigned char *)malloc(BLOCK_SIZE);
+
+  memcpy(output, ciphertext, BLOCK_SIZE);
+
+  // round 1
+  add_round_key(output, &roundkeys[ROUNDS * BLOCK_SIZE]);
+  invert_shift_rows(output);
+  invert_sub_bytes(output);
+
+  // round 2-9: sub bytes, shift rows, mix columns, add round key
+  for (int i = ROUNDS - 1; i >= 1; i--) {
+    add_round_key(output, &roundkeys[i * BLOCK_SIZE]);
+    invert_mix_columns(output);
+    invert_shift_rows(output);
+    invert_sub_bytes(output);
+  }
+
+  // round 10: add round key
+  add_round_key(output, &roundkeys[0]);
+
+  free(roundkeys);
+
   return output;
 }

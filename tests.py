@@ -7,6 +7,7 @@ import python_aes.aes as python_aes
 c_aes = ctypes.CDLL('./rijndael.so')
 p_aes = python_aes.AES(b'\x00' * 16)
 
+# helper functions to generate random bytes
 def _random_block():
     return _random_bytes(16)
 
@@ -19,9 +20,7 @@ def _random_byte():
 def _random_bytes(number_of_bytes: int):
     return bytes([random.randint(0, 255) for _ in range(number_of_bytes)])
 
-#todo are all mallocs deallocated?
-
-# todo is this in python?
+# is is not in the python implementation, so we test it in isolation
 def test_rotate_left():
     word = b'\x00\x01\x02\x03'
     c_word = ctypes.create_string_buffer(word)
@@ -29,7 +28,6 @@ def test_rotate_left():
     result = ctypes.string_at(c_word, 4)
     assert result == b'\x01\x02\x03\x00'
 
-# assert, that c anc python implementations of substituting bytes are equal
 def test_sub_byte():
     byte = _random_byte()
     print('random byte:', byte)
@@ -37,6 +35,7 @@ def test_sub_byte():
     c_aes.sub_byte(c_byte)
     c_result = ctypes.string_at(c_byte, 1)
 
+    # in the python implementation, sub byte is not isolated in a function, so we copy the code here
     p_result = python_aes.s_box[byte[0]]
 
     assert c_result == bytes([p_result])
@@ -98,10 +97,7 @@ def test_expand_key():
     # hint from https://stackoverflow.com/questions/55999102/segfault-when-accessing-large-memory-buffer-from-ctypes
     c_aes.expand_key.restype = ctypes.POINTER(ctypes.c_char * 176)
     address = c_aes.expand_key(c_key)
-    c_keys = ctypes.string_at(
-        address,
-        176
-    )
+    c_keys = ctypes.string_at(address, 176)
     p_keys = p_aes._expand_key(key)
 
     print (c_keys)
@@ -202,6 +198,21 @@ def test_mix_columns():
 
     assert c_result == p_result
 
+def test_invert_mix_columns():
+    # 16 byte block
+    buffer = _random_block()
+    print('random block:', buffer)
+    c_block = ctypes.create_string_buffer(buffer)
+
+    c_aes.invert_mix_columns(c_block)
+    c_result = ctypes.string_at(c_block, 16)
+
+    p_matrix = python_aes.bytes2matrix(buffer)
+    python_aes.inv_mix_columns(p_matrix)
+    p_result = python_aes.matrix2bytes(p_matrix)
+
+    assert c_result == p_result
+
 def test_add_round_key():
     block_buffer = _random_block()
     key_buffer = _random_block()
@@ -220,7 +231,9 @@ def test_add_round_key():
 
     assert c_result == p_result
 
-def test_aes_encrypt_block():
+# testing the entire encryption and decryption process three times
+@pytest.mark.parametrize('_', range(3))
+def test_aes_encrypt_and_decrypt_block(_):
     # 16 byte block
     block_buffer = _random_block()
     key_buffer = _random_block()
@@ -228,35 +241,33 @@ def test_aes_encrypt_block():
     block = ctypes.create_string_buffer(block_buffer)
     key = ctypes.create_string_buffer(key_buffer)
 
+    # encrypt in c
     c_aes.aes_encrypt_block.restype = ctypes.POINTER(ctypes.c_char * 16)
     address = c_aes.aes_encrypt_block(block, key)
-    c_result = ctypes.string_at(address, 16)
+    c_result_encryption = ctypes.string_at(address, 16)
+    c_aes.my_free(address)
 
+    # encrypt in python
     _p_aes = python_aes.AES(key_buffer)
     p_result = _p_aes.encrypt_block(block_buffer)
 
-    assert c_result == bytes(p_result)
+    assert c_result_encryption == bytes(p_result)
 
+    # decrypt in c
+    c_aes.aes_decrypt_block.restype = ctypes.POINTER(ctypes.c_char * 16)
+    address = c_aes.aes_decrypt_block(c_result_encryption, key)
+    c_result_decryption = ctypes.string_at(address, 16)
     c_aes.my_free(address)
 
-# todo: test entire encryption and decryption process three times
-    # generate 3 random plaintexts and keys, encrypt them with both
-    # your code and the Python implementation, and ensure that the resulting ciphertexts match.
-    # Then feed the key and ciphertexts into the decryption and ensure that the output matches the
-    # original plaintext
+    # decrypt in python
+    p_result = _p_aes.decrypt_block(p_result)
 
-# result = ctypes.string_at(
-#     rijndael.aes_encrypt_block(plaintext, key),
-#     16
-# )
+    assert c_result_decryption == bytes(p_result)
 
-# @pytest.fixture
-# def libfact():
-#     yield rijndael
+    assert block_buffer == c_result_decryption
 
-
+# helper function, Converts a 3D list into a byte array.
 def _keys2bytes(keys: list[list[list]]):
-    """ Converts a 3D list into a byte array. """
     # Flatten the list
     flat_list = [item for sublist1 in keys for sublist2 in sublist1 for item in sublist2]
     
