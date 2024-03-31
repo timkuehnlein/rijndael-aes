@@ -35,7 +35,8 @@ def test_rotate_left():
     result = ctypes.string_at(c_word, 4)
     assert result == b'\x01\x02\x03\x00'
 
-def test_sub_byte():
+@pytest.mark.parametrize('_', range(3))
+def test_sub_byte(_):
     byte = _random_byte()
     print('random byte:', byte)
     c_byte = ctypes.create_string_buffer(byte)
@@ -47,7 +48,8 @@ def test_sub_byte():
 
     assert c_result == bytes([p_result])
 
-def test_sub_word():
+@pytest.mark.parametrize('_', range(3))
+def test_sub_word(_):
     word = _random_word()
     print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
@@ -57,7 +59,8 @@ def test_sub_word():
     p_result = [python_aes.s_box[b] for b in word]
     assert c_result == bytes(p_result)
 
-def test_invert_sub_byte():
+@pytest.mark.parametrize('_', range(3))
+def test_invert_sub_byte(_):
     byte = _random_byte()
     print('random byte:', byte)
     c_byte = ctypes.create_string_buffer(byte)
@@ -68,7 +71,8 @@ def test_invert_sub_byte():
 
     assert c_result == bytes([p_result])
 
-def test_invert_sub_word():
+@pytest.mark.parametrize('_', range(3))
+def test_invert_sub_word(_):
     word = _random_word()
     print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
@@ -78,7 +82,8 @@ def test_invert_sub_word():
     p_result = [python_aes.inv_s_box[b] for b in word]
     assert c_result == bytes(p_result)
 
-def test_xor_words():
+@pytest.mark.parametrize('_', range(3))
+def test_xor_words(_):
     word1 = _random_word()
     word2 = _random_word()
     print('random word1:', word1, 'random word2:', word2)
@@ -90,7 +95,8 @@ def test_xor_words():
     p_result = python_aes.xor_bytes(word1, word2)
     assert c_result == bytes(p_result)
 
-def test_expand_key():
+@pytest.mark.parametrize('_', range(3))
+def test_expand_key(_):
     # 16 byte block
     key = _random_block()
     print('random key:', key)
@@ -114,7 +120,8 @@ def test_expand_key():
 
     c_aes.my_free(address)
 
-def test_sub_bytes():
+@pytest.mark.parametrize('_', range(3))
+def test_sub_bytes(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -129,7 +136,8 @@ def test_sub_bytes():
 
     assert c_result == p_result
 
-def test_invert_sub_bytes():
+@pytest.mark.parametrize('_', range(3))
+def test_invert_sub_bytes(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -144,7 +152,8 @@ def test_invert_sub_bytes():
 
     assert c_result == p_result
 
-def test_shift_rows():
+@pytest.mark.parametrize('_', range(3))
+def test_shift_rows(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -160,7 +169,8 @@ def test_shift_rows():
 
     assert c_result == p_result
 
-def test_invert_shift_rows():
+@pytest.mark.parametrize('_', range(3))
+def test_invert_shift_rows(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -176,7 +186,8 @@ def test_invert_shift_rows():
 
     assert c_result == p_result
 
-def test_mix_single_column():
+@pytest.mark.parametrize('_', range(3))
+def test_mix_single_column(_):
     word = _random_word()
     print('random word:', word)
     c_word = ctypes.create_string_buffer(word)
@@ -190,7 +201,8 @@ def test_mix_single_column():
 
     assert c_result == p_result
 
-def test_mix_columns():
+@pytest.mark.parametrize('_', range(3))
+def test_mix_columns(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -205,7 +217,8 @@ def test_mix_columns():
 
     assert c_result == p_result
 
-def test_invert_mix_columns():
+@pytest.mark.parametrize('_', range(3))
+def test_invert_mix_columns(_):
     # 16 byte block
     buffer = _random_block()
     print('random block:', buffer)
@@ -220,7 +233,8 @@ def test_invert_mix_columns():
 
     assert c_result == p_result
 
-def test_add_round_key():
+@pytest.mark.parametrize('_', range(3))
+def test_add_round_key(_):
     block_buffer = _random_block()
     key_buffer = _random_block()
     print('random block:', block_buffer, 'random key:', key_buffer)
