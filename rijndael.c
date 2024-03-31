@@ -1,20 +1,19 @@
 /*
  * D23124833 / Tim Kühnlein
- * 
+ *
  * This file contains the implementation of the functions declared in the
  * header file. The functions are used to encrypt and decrypt a single block
  * of data using the AES algorithm. The block size is 128 bits and the key
  * size is 128 bits. The implementation draws inspiration from the Python
  * implementation of the AES algorithm, which can be found here:
  * https://github.com/boppreh/aes.git
- * 
- * 
+ *
  */
+
+#include "rijndael.h"
 
 #include <stdlib.h>
 #include <string.h>  // memcpy
-
-#include "rijndael.h"
 
 // lookup table for the s-box
 const unsigned char s_box[256] = {
@@ -134,8 +133,8 @@ void xor_words(unsigned char *a, unsigned char *b) {
  */
 
 /*
-* Substitutes each byte in a block using the s-box
-*/
+ * Substitutes each byte in a block using the s-box
+ */
 void sub_bytes(unsigned char *block) {
   for (int i = 0; i < BLOCK_SIZE; i++) {
     sub_byte(&block[i]);
@@ -271,11 +270,11 @@ void invert_mix_columns(unsigned char *block) {
   for (int i = 0; i < 4; i++) {
     unsigned char u = xtime(xtime((*m)[i][0] ^ (*m)[i][2]));
     unsigned char v = xtime(xtime((*m)[i][1] ^ (*m)[i][3]));
-      
-      (*m)[i][0] ^= u;
-      (*m)[i][1] ^= v;
-      (*m)[i][2] ^= u;
-      (*m)[i][3] ^= v;
+
+    (*m)[i][0] ^= u;
+    (*m)[i][1] ^= v;
+    (*m)[i][2] ^= u;
+    (*m)[i][3] ^= v;
   }
 
   mix_columns(block);
@@ -296,8 +295,8 @@ void add_round_key(unsigned char *block, unsigned char *round_key) {
 }
 
 /*
- * This function should expand the round key. Given an input,
- * which is a single 128-bit key, it should return a 176-byte
+ * This function expands the round key. Given an input,
+ * which is a single 128-bit key, it returns a 176-byte
  * vector, containing the 11 round keys one after the other
  */
 unsigned char *expand_key(unsigned char *cipher_key) {
@@ -345,7 +344,7 @@ unsigned char *expand_key(unsigned char *cipher_key) {
 
 /*
  * The implementations of the functions declared in the
- * header file should go here
+ * header file follow here
  */
 unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key) {
   // rounds: 10
